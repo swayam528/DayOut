@@ -1,3 +1,0 @@
-# DayOut
-
-Test

@@ -39,7 +39,7 @@ const Hero = () => {
             Whether it's a family outing, a day with friends, or a solo
             adventure, DayOut has got you covered.
           </p>
-          <Button href="/pricing" white>
+          <Button href="/getstarted" white>
             Get started
           </Button>
         </div>

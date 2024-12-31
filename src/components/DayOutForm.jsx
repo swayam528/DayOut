@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import { Range, getTrackBackground } from "react-range";
 import "./DayOutForm.css"; // Custom CSS for styling
 
 const DayOutForm = () => {
-  const [ageRange, setAgeRange] = useState({ min: 18, max: 30 });
+  const [ageRange, setAgeRange] = useState([18, 30]);
   const [numPeople, setNumPeople] = useState(1);
   const [location, setLocation] = useState("");
   const [tripLength, setTripLength] = useState(4);
@@ -27,17 +28,6 @@ const DayOutForm = () => {
     alert("Form Submitted! Check the console for details.");
   };
 
-  // Handle changes for the age range sliders
-  const handleMinAgeChange = (e) => {
-    const newMin = Math.min(Number(e.target.value), ageRange.max - 1);
-    setAgeRange({ ...ageRange, min: newMin });
-  };
-
-  const handleMaxAgeChange = (e) => {
-    const newMax = Math.max(Number(e.target.value), ageRange.min + 1);
-    setAgeRange({ ...ageRange, max: newMax });
-  };
-
   return (
     <div className="form-container">
       <h2>Create Your Perfect Day Out</h2>
@@ -45,26 +35,58 @@ const DayOutForm = () => {
         {/* Age Range Selection */}
         <div className="form-group">
           <label>Age Range</label>
-          <div className="range-group">
-            <input
-              type="range"
-              min="1"
-              max="100"
-              value={ageRange.min}
-              onChange={handleMinAgeChange}
-              className="age-range-slider"
-            />
-            <span>{ageRange.min}</span>
-            <span> to </span>
-            <input
-              type="range"
-              min="1"
-              max="100"
-              value={ageRange.max}
-              onChange={handleMaxAgeChange}
-              className="age-range-slider"
-            />
-            <span>{ageRange.max}</span>
+          <Range
+            values={ageRange}
+            step={1}
+            min={0}
+            max={100}
+            onChange={(values) => setAgeRange(values)}
+            renderTrack={({ props, children }) => (
+              <div
+                {...props}
+                style={{
+                  ...props.style,
+                  height: "6px",
+                  width: "100%",
+                  background: getTrackBackground({
+                    values: ageRange,
+                    colors: ["#ccc", "#007bff", "#ccc"],
+                    min: 0,
+                    max: 100,
+                  }),
+                }}
+              >
+                {children}
+              </div>
+            )}
+            renderThumb={({ props, isDragged }) => (
+              <div
+                {...props}
+                style={{
+                  ...props.style,
+                  height: "24px",
+                  width: "24px",
+                  borderRadius: "12px",
+                  backgroundColor: "#007bff",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  boxShadow: "0px 2px 6px #AAA",
+                }}
+              >
+                <div
+                  style={{
+                    height: "16px",
+                    width: "5px",
+                    backgroundColor: isDragged ? "#007bff" : "#CCC",
+                  }}
+                />
+              </div>
+            )}
+          />
+          <div className="flex justify-between mt-2">
+            <span className="under-numbers">{ageRange[0]}</span>
+            <span className="under-numbers">{ageRange[1]}</span>
           </div>
         </div>
 
@@ -98,7 +120,9 @@ const DayOutForm = () => {
             value={tripLength}
             onChange={(e) => setTripLength(e.target.value)}
           />
-          <span>{tripLength} hours</span>
+          <span style={{ paddingTop: 10 }} className="under-numbers">
+            {tripLength} hours
+          </span>
         </div>
 
         <div className="form-group">

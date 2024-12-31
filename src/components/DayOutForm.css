@@ -163,3 +163,7 @@ textarea:focus {
 button.submit-button:hover {
   background-color: #336bbd;
 }
+
+.under-numbers {
+  color: #193053;
+}

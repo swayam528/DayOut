@@ -3,6 +3,7 @@ import ButtonGradient from "./assets/svg/ButtonGradient";
 import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import Services from "./components/Services";
+import DayOutForm from "./components/DayOutForm";
 
 const App = () => {
   return (
@@ -10,7 +11,7 @@ const App = () => {
       <div className="pt-[4.75rem] lg:pt-[5.25rem] overflow-hidden bg-color-darkBlue">
         <Routes>
           <Route path="/" element={<Hero />} />
-          <Route path="/getstarted" element={<Services />} />
+          <Route path="/getstarted" element={<DayOutForm />} />
         </Routes>
         <Footer />
       </div>

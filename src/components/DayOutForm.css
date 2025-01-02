@@ -1,0 +1,169 @@
+body {
+  font-family: "Roboto", sans-serif;
+  background-color: #f8f9fd; /* Keep the light pastel background */
+}
+
+.form-container {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff; /* Clean white form background */
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  border-radius: 12px;
+  border: 1px solid #d0e4fa; /* Light blue border for consistency */
+}
+
+h2 {
+  text-align: center;
+  color: #2c3e50; /* Darker blue-grey for headings */
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.day-out-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 0.5rem;
+  color: #3a506b; /* Muted blue-grey for labels */
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+input[type="number"],
+input[type="text"],
+textarea {
+  padding: 0.6rem;
+  border: 1px solid #d0e4fa; /* Light blue border */
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #edf5ff; /* Light blueish input background */
+  color: #2c3e50; /* Text color */
+}
+
+textarea {
+  resize: none;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+textarea:focus {
+  border-color: #87baf3; /* Brighter blue border on focus */
+  outline: none;
+  background-color: #ffffff; /* Slightly brighter background on focus */
+}
+
+.range-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+input[type="range"] {
+  width: 45%; /* Make the sliders smaller */
+  margin-top: 0.5rem;
+  appearance: none;
+  height: 6px;
+  background: #d0e4fa; /* Light blue for the slider background */
+  border-radius: 4px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #5a95f2; /* Bright blue slider knob */
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  background: #336bbd; /* Darker blue knob on focus */
+}
+
+/* Custom styling for the age range */
+.age-range-slider {
+  width: 45%; /* Make the sliders smaller */
+}
+
+.age-range-slider + span {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2c3e50; /* Dark color for numbers */
+  text-align: center;
+}
+
+button.submit-button {
+  padding: 0.75rem;
+  background: #5a95f2; /* Brighter blue button */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+}
+
+button.submit-button:hover {
+  background: #336bbd; /* Slightly darker blue on hover */
+}
+
+.time-of-day-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-around;
+}
+
+.time-of-day-group button {
+  padding: 0.6rem 1rem;
+  border: 1px solid #d0e4fa; /* Light blue border */
+  border-radius: 8px;
+  background: #edf5ff; /* Light blueish background */
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2c3e50; /* Softer dark text */
+  transition: all 0.3s ease;
+}
+
+.time-of-day-group button.active {
+  background: #5a95f2; /* Highlighted blue */
+  color: white;
+  border: none;
+}
+
+.time-of-day-group button:hover {
+  background: #d0e4fa; /* Slight hover effect */
+  color: #2c3e50;
+}
+
+textarea {
+  background: #edf5ff; /* Light blueish */
+  border: 1px solid #d0e4fa;
+}
+
+textarea:focus {
+  background: white;
+  border-color: #87baf3;
+}
+
+button.submit-button:hover {
+  background-color: #336bbd;
+}
+
+.under-numbers {
+  color: #193053;
+}

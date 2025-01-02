@@ -133,7 +133,7 @@ const DayOutForm = () => {
               className={timeOfDay === "day" ? "active" : ""}
               onClick={() => handleTimeOfDayChange("day")}
             >
-              🌞 Day
+              🌞 Morning
             </button>
             <button
               type="button"
@@ -155,6 +155,7 @@ const DayOutForm = () => {
         <div className="form-group">
           <label>Any Additional Information</label>
           <textarea
+            className="under-numbers"
             value={additionalInfo}
             onChange={(e) => setAdditionalInfo(e.target.value)}
             placeholder="Add any specific details or preferences here..."

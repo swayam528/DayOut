@@ -11,7 +11,7 @@ const App = () => {
       <div className="pt-[4.75rem] lg:pt-[5.25rem] overflow-hidden bg-color-darkBlue">
         <Routes>
           <Route path="/" element={<Hero />} />
-          <Route path="/getstarted" element={<DayOutForm />} />
+          <Route path="/dayout" element={<DayOutForm />} />
         </Routes>
         <Footer />
       </div>

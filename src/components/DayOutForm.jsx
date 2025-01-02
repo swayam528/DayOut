@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Range, getTrackBackground } from "react-range";
 import GooglePlacesAutocomplete from "react-google-autocomplete";
-import Activity from "./Activity"; // Importing the new Activity component
-import "./DayOutForm.css"; // Custom CSS for styling. Test generated activites.
+import Activity from "./Activity";
+import "./DayOutForm.css";
+import { FiArrowLeft, FiRefreshCcw } from "react-icons/fi";
 
 const DayOutForm = () => {
   const [ageRange, setAgeRange] = useState([18, 30]);
@@ -13,57 +14,166 @@ const DayOutForm = () => {
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isFormHidden, setIsFormHidden] = useState(false); // New state to manage form visibility
+  const [isFormHidden, setIsFormHidden] = useState(false);
 
   const handleTimeOfDayChange = (value) => {
     setTimeOfDay(value);
   };
 
+  const parseActivities = (content) => {
+    try {
+      const activitiesArray = [];
+      // Split by numbered activities (1., 2., etc.)
+      const activityBlocks = content.split(/\d+\./);
+
+      // Remove empty first element if it exists
+      if (activityBlocks[0].trim() === "") {
+        activityBlocks.shift();
+      }
+
+      activityBlocks.forEach((block) => {
+        if (block.trim()) {
+          const titleMatch = block.match(/Activity Title:\s*([^\n]+)/i);
+          const descriptionMatch = block.match(/Description:\s*([^\n]+)/i);
+          const durationMatch = block.match(/Duration:\s*(\d+)\s*hour/i);
+          const highlightMatch = block.match(/Highlight:\s*([^\n]+)/i);
+
+          if (titleMatch) {
+            activitiesArray.push({
+              name: titleMatch[1].trim(),
+              description: descriptionMatch ? descriptionMatch[1].trim() : "",
+              length: durationMatch ? `${durationMatch[1]} hour` : "1 hour",
+              highlight: highlightMatch ? highlightMatch[1].trim() : "",
+              image: "",
+            });
+          }
+        }
+      });
+
+      console.log("Number of activities parsed:", activitiesArray.length);
+
+      // Ensure we have the correct number of activities
+      if (activitiesArray.length === 0) {
+        return [
+          {
+            name: "Error Parsing Activities",
+            description: "Please try regenerating the itinerary",
+            length: "1 hour",
+            highlight: "Please try again",
+            image: "",
+          },
+        ];
+      }
+
+      return activitiesArray;
+    } catch (error) {
+      console.error("Error parsing activities:", error);
+      return [
+        {
+          name: "Error Parsing Activities",
+          description: "Please try regenerating the itinerary",
+          length: "1 hour",
+          highlight: "Please try again",
+          image: "",
+        },
+      ];
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Format the prompt dynamically based on form inputs
     const formattedPrompt = `
-      You are a travel planner assistant. Plan a perfect day out based on these criteria:
-
-      1. Age Range: ${ageRange[0]}-${ageRange[1]}
-      2. Number of People: ${numPeople}
-      3. Location: ${location || "unspecified"}
-      4. Trip Length: ${tripLength} hours
-      5. Time of Day: ${timeOfDay}
-      6. Additional Preferences: ${additionalInfo || "None"}
-
-      Provide activities with:
-      - A title (name of the activity)
-      - A description (what is the activity)
-      - A duration in hours
-      - A unique highlight (optional, to make it stand out)
-
-      Limit the total number of activities to match the trip length.
-      For instance, if the trip is 2 hours, provide no more than 2 activities (1 hour each). If it's 4 hours, provide 3 or 4 activities.
-
-      The activities should be realistic based on the time and location.
-
-      Avoid activities that cost more than $30 per person.
-
-      Example output (for a 4-hour trip in New York):
-      1. Activity Title: Central Park Walk
-         - Description: A leisurely stroll through Central Park to enjoy nature and the city’s skyline.
-         - Duration: 2 hours
-         - Highlight: Visit Bethesda Terrace and Fountain.
-
-      2. Activity Title: Times Square Visit
-         - Description: Take in the lights and excitement of Times Square, perfect for people-watching.
-         - Duration: 1 hour
-         - Highlight: Visit the massive digital billboards.
-
-      3. Activity Title: Broadway Show
-         - Description: Watch a famous Broadway show for an evening of entertainment.
-         - Duration: 1 hour
-         - Highlight: Experience the magic of live theater.
-    `;
+  You are an AI travel planner. Create a ${tripLength}-hour ${timeOfDay} itinerary.
+  
+  Important Requirements:
+  - Create exactly ${tripLength} different activities
+  - Each activity must be exactly 1 hour
+  - Total time must add up to ${tripLength} hours
+  - Activities must be suitable for ${numPeople} people aged ${ageRange[0]}-${
+      ageRange[1]
+    }
+  - Location: ${location || "any location"}
+  ${additionalInfo ? `- Additional preferences: ${additionalInfo}` : ""}
+  
+  For each activity, provide EXACTLY this format:
+  Activity Title: [name]
+  Description: [brief description]
+  Duration: 1 hour
+  Highlight: [unique feature]
+  
+  Number each activity 1 through ${tripLength}. Do not add any extra text or explanations.
+  `;
 
     setLoading(true);
+
+    try {
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              "Bearer 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",
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "user", content: formattedPrompt }],
+            temperature: 0.7, // Add this to ensure some variety
+            max_tokens: 1000, // Add this to ensure we get full responses
+          }),
+        }
+      );
+
+      const data = await response.json();
+      const generatedContent = data.choices[0].message.content;
+      console.log("Generated content:", generatedContent); // Add this for debugging
+      const parsedActivities = parseActivities(generatedContent);
+      console.log("Parsed activities:", parsedActivities); // Add this for debugging
+      setActivities(parsedActivities);
+      setIsFormHidden(true);
+    } catch (error) {
+      console.error("Error fetching activities:", error);
+    }
+
+    setLoading(false);
+  };
+
+  const handleRefresh = async (index) => {
+    setLoading(true);
+    const formattedPrompt = `
+Create a ${tripLength}-hour ${timeOfDay} itinerary for ${numPeople} people aged ${
+      ageRange[0]
+    }-${ageRange[1]} in ${location || "any location"}. ${
+      additionalInfo ? "Additional preferences: " + additionalInfo : ""
+    }
+
+Format each activity exactly like this (provide ${tripLength} activities total, each 1 hour long):
+Activity Title: [name]
+Description: [brief description]
+Duration: 1 hour
+Highlight: [unique feature]
+`;
+    // const formattedPrompt = `
+    //   You are a travel planner assistant. Plan a single activity based on these criteria:
+    //   1. Age Range: ${ageRange[0]}-${ageRange[1]}
+    //   2. Number of People: ${numPeople}
+    //   3. Location: ${location || "unspecified"}
+    //   4. Time of Day: ${timeOfDay}
+    //   5. Additional Preferences: ${additionalInfo || "None"}
+
+    //   Provide exactly one activity with this format:
+    //   Activity Title: [name of activity]
+    //   Description: [detailed description]
+    //   Duration: [X] hour
+    //   Highlight: [unique feature or selling point]
+
+    //   The activity should:
+    //   - Be realistic based on the time and location
+    //   - Cost less than $30 per person
+    //   - Be appropriate for the specified age range and group size
+    // `;
 
     try {
       const response = await fetch(
@@ -84,51 +194,64 @@ const DayOutForm = () => {
 
       const data = await response.json();
       const generatedContent = data.choices[0].message.content;
-      const parsedActivities = parseActivities(generatedContent);
-      setActivities(parsedActivities);
-      setIsFormHidden(true); // Hide the form after generating activities
-    } catch (error) {
-      console.error("Error fetching activities:", error);
-    }
 
+      // Parse the single activity
+      const activities = parseActivities(generatedContent);
+      if (activities && activities.length > 0) {
+        setActivities((prevActivities) => {
+          const newActivities = [...prevActivities];
+          newActivities[index] = activities[0];
+          return newActivities;
+        });
+      }
+    } catch (error) {
+      console.error("Error refreshing activity:", error);
+    }
     setLoading(false);
   };
 
-  const parseActivities = (content) => {
-    // Parse the activities from the AI's response
-    const activitiesArray = [];
-    const activityMatches = content.match(
-      /(\d+)\.\s*Activity Title: ([^\n]+)[\s\S]+?Duration:\s*(\d+)\s*hour/gi
-    );
+  const handleBackToForm = () => {
+    setIsFormHidden(false);
+    setActivities([]);
+  };
 
-    if (activityMatches) {
-      activityMatches.forEach((match) => {
-        const [fullMatch, activityNumber, activityTitle, duration] =
-          match.match(
-            /(\d+)\.\s*Activity Title: ([^\n]+)[\s\S]+?Duration:\s*(\d+)\s*hour/
-          );
-        const descriptionMatch = match.match(/- Description:\s*([^\n]+)/);
-        const description = descriptionMatch
-          ? descriptionMatch[1]
-          : "No description available";
-
-        activitiesArray.push({
-          name: activityTitle,
-          description: description,
-          length: `${duration} hour`,
-          image: "", // Placeholder for image URL
-        });
-      });
-    }
-
-    // Limit activities to the trip length
-    return activitiesArray.slice(0, tripLength);
+  const handleReset = () => {
+    setLocation("");
+    setActivities([]);
+    setAgeRange([18, 30]);
+    setNumPeople(1);
+    setTripLength(4);
+    setTimeOfDay("day");
+    setAdditionalInfo("");
+    setIsFormHidden(false);
   };
 
   return (
     <div className="form-container">
-      <h2>Create Your Perfect Day Out</h2>
-      {!isFormHidden && (
+      {isFormHidden ? (
+        <div className="activities-container">
+          <div className="top-nav">
+            <button
+              className="back-button"
+              style={{ color: "black" }}
+              onClick={handleBackToForm}
+            >
+              <FiArrowLeft size={24} />
+            </button>
+            {/* <button className="reset-button" onClick={handleReset}>
+              <FiRefreshCcw size={24} />
+            </button> */}
+          </div>
+
+          {activities.map((activity, index) => (
+            <Activity
+              key={index}
+              activity={activity}
+              regenerateActivity={() => handleRefresh(index)}
+            />
+          ))}
+        </div>
+      ) : (
         <form onSubmit={handleSubmit} className="day-out-form">
           {/* Age Range Selection */}
           <div className="form-group">
@@ -288,15 +411,6 @@ const DayOutForm = () => {
             {loading ? "Generating..." : "Generate Day Out"}
           </button>
         </form>
-      )}
-
-      {/* Display Activities */}
-      {activities.length > 0 && (
-        <div className="activities-container">
-          {activities.map((activity, index) => (
-            <Activity key={index} activity={activity} />
-          ))}
-        </div>
       )}
     </div>
   );

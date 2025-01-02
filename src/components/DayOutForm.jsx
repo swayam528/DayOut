@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Range, getTrackBackground } from "react-range";
+import GooglePlacesAutocomplete from "react-google-autocomplete";
 import "./DayOutForm.css"; // Custom CSS for styling
 
 const DayOutForm = () => {
@@ -32,7 +33,7 @@ const DayOutForm = () => {
     <div className="form-container">
       <h2>Create Your Perfect Day Out</h2>
       <form onSubmit={handleSubmit} className="day-out-form">
-        {/* Age Range Selection */}
+        {/* Age Range */}
         <div className="form-group">
           <label>Age Range</label>
           <Range
@@ -90,6 +91,7 @@ const DayOutForm = () => {
           </div>
         </div>
 
+        {/* Number of People */}
         <div className="form-group">
           <label>Number of People</label>
           <input
@@ -101,16 +103,22 @@ const DayOutForm = () => {
           />
         </div>
 
+        {/* Location */}
         <div className="form-group">
           <label>Location</label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Enter your town"
+          <GooglePlacesAutocomplete
+            apiKey="AIzaSyBUS2OUq9oGdalL3OeF-H_oDXK0Q5kOUio"
+            onPlaceSelected={(place) => setLocation(place.formatted_address)}
+            placeholder="Enter your town or city"
+            options={{
+              types: ["(cities)"],
+              componentRestrictions: { country: "us" },
+            }}
+            className="google-autocomplete"
           />
         </div>
 
+        {/* Trip Length */}
         <div className="form-group">
           <label>Length of Trip (hours)</label>
           <input
@@ -125,6 +133,7 @@ const DayOutForm = () => {
           </span>
         </div>
 
+        {/* Time of Day */}
         <div className="form-group">
           <label>Time of Day</label>
           <div className="time-of-day-group">
@@ -152,6 +161,7 @@ const DayOutForm = () => {
           </div>
         </div>
 
+        {/* Additional Info */}
         <div className="form-group">
           <label>Any Additional Information</label>
           <textarea
@@ -162,6 +172,7 @@ const DayOutForm = () => {
           ></textarea>
         </div>
 
+        {/* Submit */}
         <button type="submit" className="submit-button">
           Generate Day Out
         </button>

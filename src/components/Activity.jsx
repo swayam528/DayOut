@@ -1,65 +1,73 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaRedo } from "react-icons/fa";
 
 const Activity = ({ activity, regenerateActivity }) => {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [placeDetails, setPlaceDetails] = useState(null);
+  const [placeImage, setPlaceImage] = useState("/api/placeholder/400/200");
 
-  const getActivityImage = (activityName) => {
-    // Simple mapping of keywords to placeholder images
-    const activityTypes = {
-      default: "/api/placeholder/400/200",
-      restaurant: "/api/placeholder/400/200",
-      park: "/api/placeholder/400/200",
-      museum: "/api/placeholder/400/200",
-      shopping: "/api/placeholder/400/200",
-      entertainment: "/api/placeholder/400/200",
-      sports: "/api/placeholder/400/200",
-    };
-
-    const name = activityName.toLowerCase();
-    let imageUrl = activityTypes.default;
-
-    // Check for keywords in the activity name
-    if (
-      name.includes("restaurant") ||
-      name.includes("food") ||
-      name.includes("cafe") ||
-      name.includes("dining")
-    ) {
-      imageUrl = activityTypes.restaurant;
-    } else if (
-      name.includes("park") ||
-      name.includes("garden") ||
-      name.includes("nature")
-    ) {
-      imageUrl = activityTypes.park;
-    } else if (
-      name.includes("museum") ||
-      name.includes("gallery") ||
-      name.includes("exhibition")
-    ) {
-      imageUrl = activityTypes.museum;
-    } else if (
-      name.includes("mall") ||
-      name.includes("shop") ||
-      name.includes("store")
-    ) {
-      imageUrl = activityTypes.shopping;
-    } else if (
-      name.includes("movie") ||
-      name.includes("theater") ||
-      name.includes("concert")
-    ) {
-      imageUrl = activityTypes.entertainment;
-    } else if (
-      name.includes("sports") ||
-      name.includes("game") ||
-      name.includes("fitness")
-    ) {
-      imageUrl = activityTypes.sports;
+  useEffect(() => {
+    if (activity.name) {
+      searchPlace(activity.name);
     }
+  }, [activity.name]);
 
-    return imageUrl;
+  const searchPlace = async (query) => {
+    try {
+      // Initialize Places service
+      const service = new window.google.maps.places.PlacesService(
+        document.createElement("div")
+      );
+
+      // Search for a specific place
+      const request = {
+        query: query,
+        fields: [
+          "name",
+          "formatted_address",
+          "photos",
+          "place_id",
+          "rating",
+          "user_ratings_total",
+        ],
+      };
+
+      service.findPlaceFromQuery(request, (results, status) => {
+        if (
+          status === window.google.maps.places.PlacesServiceStatus.OK &&
+          results[0]
+        ) {
+          // Get additional details for the place
+          service.getDetails(
+            {
+              placeId: results[0].place_id,
+              fields: [
+                "name",
+                "formatted_address",
+                "photos",
+                "rating",
+                "user_ratings_total",
+              ],
+            },
+            (place, detailStatus) => {
+              if (
+                detailStatus ===
+                window.google.maps.places.PlacesServiceStatus.OK
+              ) {
+                setPlaceDetails(place);
+                if (place.photos && place.photos[0]) {
+                  setPlaceImage(
+                    place.photos[0].getUrl({ maxWidth: 400, maxHeight: 200 })
+                  );
+                }
+              }
+            }
+          );
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching place details:", error);
+    }
   };
 
   const handleRegenerate = async () => {
@@ -68,22 +76,30 @@ const Activity = ({ activity, regenerateActivity }) => {
     setIsLoading(false);
   };
 
-  if (!activity) {
-    return null;
-  }
+  if (!activity) return null;
 
   return (
     <div className="activity-card">
       <div className="activity-image">
         <img
-          src={getActivityImage(activity.name)}
+          src={placeImage}
           alt={activity.name}
           className="activity-thumbnail"
         />
       </div>
       <div className="activity-content">
         <div className="activity-header">
-          <h3>{activity.name || "Unnamed Activity"}</h3>
+          <div>
+            <h3 style={{ color: "#3471b2" }}>
+              {placeDetails?.name || activity.name}
+            </h3>
+            {placeDetails?.rating && (
+              <div className="rating">
+                ⭐ {placeDetails.rating} ({placeDetails.user_ratings_total}{" "}
+                reviews)
+              </div>
+            )}
+          </div>
           <button
             className="reset-button"
             onClick={handleRegenerate}
@@ -92,8 +108,12 @@ const Activity = ({ activity, regenerateActivity }) => {
             <FaRedo className={isLoading ? "spinning" : ""} />
           </button>
         </div>
-        <p>{activity.description || "No description available"}</p>
-        <p className="duration">⏱ Duration: {activity.length || "Unknown"}</p>
+
+        {placeDetails?.formatted_address && (
+          <p className="address">📍 {placeDetails.formatted_address}</p>
+        )}
+        <p className="description">{activity.description}</p>
+        <p className="duration">⏱ Duration: {activity.length}</p>
         {activity.highlight && (
           <p className="highlight">✨ {activity.highlight}</p>
         )}
@@ -110,10 +130,6 @@ const Activity = ({ activity, regenerateActivity }) => {
           transition: transform 0.2s ease;
         }
 
-        .activity-card:hover {
-          transform: translateY(-2px);
-        }
-
         .activity-image {
           width: 100%;
           height: 200px;
@@ -124,11 +140,6 @@ const Activity = ({ activity, regenerateActivity }) => {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: transform 0.3s ease;
-        }
-
-        .activity-card:hover .activity-thumbnail {
-          transform: scale(1.05);
         }
 
         .activity-content {
@@ -138,20 +149,24 @@ const Activity = ({ activity, regenerateActivity }) => {
         .activity-header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
+          align-items: flex-start;
           margin-bottom: 1rem;
         }
 
-        h3 {
-          margin: 0;
-          color: #2c3e50;
-          font-size: 1.25rem;
-          font-weight: 600;
+        .rating {
+          color: #666;
+          font-size: 0.9rem;
+          margin-top: 0.25rem;
         }
 
-        p {
-          color: #3a506b;
-          margin: 0.5rem 0;
+        .address {
+          color: #666;
+          font-size: 0.9rem;
+          margin-bottom: 1rem;
+        }
+
+        .description {
+          color: #333;
           line-height: 1.5;
         }
 
@@ -178,18 +193,10 @@ const Activity = ({ activity, regenerateActivity }) => {
           padding: 0.5rem;
           border-radius: 50%;
           transition: all 0.2s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
         }
 
         .reset-button:hover {
           background-color: #edf5ff;
-        }
-
-        .reset-button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
         }
 
         .spinning {

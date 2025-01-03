@@ -19,7 +19,7 @@ Live demo: [day-out-phi.vercel.app](https://day-out-phi.vercel.app)
 - **Maps**: Google Maps JavaScript API
 - **Deployment**: Vercel
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
+- **Styling**: CSS
 
 ## Prerequisites
 

@@ -175,28 +175,28 @@ const DayOutForm = () => {
     e.preventDefault();
 
     const formattedPrompt = `
-You are an AI travel planner. Create a ${tripLength}-hour ${timeOfDay} itinerary.
-
-Important Requirements:
-- Create exactly ${tripLength} different activities
-- Each activity must be exactly 1 hour
-- Total time must add up to ${tripLength} hours
-- Activities must be suitable for ${numPeople} people aged ${ageRange[0]}-${
+  You are an AI travel planner. Create a ${tripLength}-hour ${timeOfDay} itinerary.
+  
+  Important Requirements:
+  - Create exactly ${tripLength} different activities
+  - Each activity must be exactly 1 hour
+  - Total time must add up to ${tripLength} hours
+  - Activities must be suitable for ${numPeople} people aged ${ageRange[0]}-${
       ageRange[1]
     }
-- Location: ${location || "any location"}
-${additionalInfo ? `- Additional preferences: ${additionalInfo}` : ""}
-
-IMPORTANT: For each activity, you MUST recommend a specific place (restaurant name, museum name, park name, etc.) in ${location}. Do not give generic suggestions.
-
-For each activity, provide EXACTLY this format:
-Activity Title: [specific place name]
-Description: [brief description including why this specific place is recommended]
-Duration: 1 hour
-Highlight: [unique feature of this specific place]
-
-Number each activity 1 through ${tripLength}. Do not add any extra text or explanations.
-`;
+  - Location: ${location || "any location"}
+  ${additionalInfo ? `- Additional preferences: ${additionalInfo}` : ""}
+  
+  IMPORTANT: For each activity, you MUST recommend a specific place (restaurant name, museum name, park name, etc.) in ${location}. Do not give generic suggestions.
+  
+  For each activity, provide EXACTLY this format:
+  Activity Title: [specific place name]
+  Description: [brief description including why this specific place is recommended]
+  Duration: 1 hour
+  Highlight: [unique feature of this specific place]
+  
+  Number each activity 1 through ${tripLength}. Do not add any extra text or explanations.
+  `;
 
     setLoading(true);
 
@@ -208,29 +208,33 @@ Number each activity 1 through ${tripLength}. Do not add any extra text or expla
           headers: {
             "Content-Type": "application/json",
             Authorization:
-              "Bearer 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",
+              "Bearer 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",
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
             messages: [{ role: "user", content: formattedPrompt }],
-            temperature: 0.7,
-            max_tokens: 1000,
           }),
         }
       );
 
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
       const data = await response.json();
       const generatedContent = data.choices[0].message.content;
+
       console.log("Generated content:", generatedContent);
       const parsedActivities = parseActivities(generatedContent);
       console.log("Parsed activities:", parsedActivities);
+
       setActivities(parsedActivities);
       setIsFormHidden(true);
     } catch (error) {
       console.error("Error fetching activities:", error);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleRefresh = async (index) => {
@@ -268,8 +272,7 @@ Return ONLY this format with no additional text.`;
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization:
-              "Bearer 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",
+            Authorization: "Bearer INSERT API KEY HERE",
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
@@ -281,7 +284,7 @@ Return ONLY this format with no additional text.`;
 
       const data = await response.json();
       console.log("API Response:", data);
-      const generatedContent = data.choices[0].message.content;
+      const generatedContent = data?.choices?.[0]?.message?.content;
       console.log("Generated content:", generatedContent);
       const parsedActivities = parseActivities(generatedContent);
       console.log("Parsed new activity:", parsedActivities);

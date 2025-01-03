@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { FaRedo } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { RefreshCw, Clock } from "lucide-react";
 
 const Activity = ({ activity, regenerateActivity }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [placeDetails, setPlaceDetails] = useState(null);
-  const [placeImage, setPlaceImage] = useState("/api/placeholder/400/200");
+  const [placeImage, setPlaceImage] = useState("/api/placeholder/800/400");
 
   useEffect(() => {
     if (activity.name) {
@@ -14,12 +15,10 @@ const Activity = ({ activity, regenerateActivity }) => {
 
   const searchPlace = async (query) => {
     try {
-      // Initialize Places service
       const service = new window.google.maps.places.PlacesService(
         document.createElement("div")
       );
 
-      // Search for a specific place
       const request = {
         query: query,
         fields: [
@@ -37,7 +36,6 @@ const Activity = ({ activity, regenerateActivity }) => {
           status === window.google.maps.places.PlacesServiceStatus.OK &&
           results[0]
         ) {
-          // Get additional details for the place
           service.getDetails(
             {
               placeId: results[0].place_id,
@@ -57,7 +55,7 @@ const Activity = ({ activity, regenerateActivity }) => {
                 setPlaceDetails(place);
                 if (place.photos && place.photos[0]) {
                   setPlaceImage(
-                    place.photos[0].getUrl({ maxWidth: 400, maxHeight: 200 })
+                    place.photos[0].getUrl({ maxWidth: 800, maxHeight: 400 })
                   );
                 }
               }
@@ -76,143 +74,72 @@ const Activity = ({ activity, regenerateActivity }) => {
     setIsLoading(false);
   };
 
-  if (!activity) return null;
-
   return (
-    <div className="activity-card">
-      <div className="activity-image">
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-2xl shadow-lg overflow-hidden"
+    >
+      <div className="aspect-video bg-gray-100">
         <img
           src={placeImage}
           alt={activity.name}
-          className="activity-thumbnail"
+          className="w-full h-full object-cover"
         />
       </div>
-      <div className="activity-content">
-        <div className="activity-header">
+
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 style={{ color: "#3471b2" }}>
+            <h3 className="text-xl font-semibold text-gray-900">
               {placeDetails?.name || activity.name}
             </h3>
             {placeDetails?.rating && (
-              <div className="rating">
-                ⭐ {placeDetails.rating} ({placeDetails.user_ratings_total}{" "}
-                reviews)
+              <div className="flex items-center mt-1 text-sm text-gray-600">
+                <span className="text-yellow-400">★</span>
+                <span className="ml-1">{placeDetails.rating}</span>
+                <span className="ml-1">
+                  ({placeDetails.user_ratings_total} reviews)
+                </span>
               </div>
             )}
           </div>
+
           <button
-            className="reset-button"
             onClick={handleRegenerate}
             disabled={isLoading}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <FaRedo className={isLoading ? "spinning" : ""} />
+            <RefreshCw
+              className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`}
+            />
           </button>
         </div>
 
         {placeDetails?.formatted_address && (
-          <p className="address">📍 {placeDetails.formatted_address}</p>
+          <p className="text-gray-500 text-sm mb-4">
+            📍 {placeDetails.formatted_address}
+          </p>
         )}
-        <p className="description">{activity.description}</p>
-        <p className="duration">⏱ Duration: {activity.length}</p>
+
+        <p className="text-gray-600 mb-4">{activity.description}</p>
+
+        <div className="flex items-center text-sm text-gray-500 mb-4">
+          <Clock className="w-4 h-4 mr-2" />
+          <span>{activity.length}</span>
+        </div>
+
         {activity.highlight && (
-          <p className="highlight">✨ {activity.highlight}</p>
+          <div className="bg-blue-50 text-blue-700 p-4 rounded-lg">
+            <p className="text-sm">
+              <span className="font-medium">Highlight:</span>{" "}
+              {activity.highlight}
+            </p>
+          </div>
         )}
       </div>
-
-      <style jsx>{`
-        .activity-card {
-          background-color: white;
-          border: 1px solid #d0e4fa;
-          border-radius: 12px;
-          margin-bottom: 1.5rem;
-          overflow: hidden;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          transition: transform 0.2s ease;
-        }
-
-        .activity-image {
-          width: 100%;
-          height: 200px;
-          overflow: hidden;
-        }
-
-        .activity-thumbnail {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .activity-content {
-          padding: 1.5rem;
-        }
-
-        .activity-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 1rem;
-        }
-
-        .rating {
-          color: #666;
-          font-size: 0.9rem;
-          margin-top: 0.25rem;
-        }
-
-        .address {
-          color: #666;
-          font-size: 0.9rem;
-          margin-bottom: 1rem;
-        }
-
-        .description {
-          color: #333;
-          line-height: 1.5;
-        }
-
-        .duration {
-          color: #5a95f2;
-          font-weight: 500;
-          margin-top: 1rem;
-        }
-
-        .highlight {
-          color: #5a95f2;
-          font-weight: 500;
-          background-color: #edf5ff;
-          padding: 0.5rem 1rem;
-          border-radius: 6px;
-          margin-top: 1rem;
-        }
-
-        .reset-button {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #5a95f2;
-          padding: 0.5rem;
-          border-radius: 50%;
-          transition: all 0.2s;
-        }
-
-        .reset-button:hover {
-          background-color: #edf5ff;
-        }
-
-        .spinning {
-          animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
-    </div>
+    </motion.div>
   );
 };
 

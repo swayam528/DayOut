@@ -212,8 +212,7 @@ Focus on highly-rated, popular places that are currently open and operational.`;
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization:
-              "Bearer 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",
+            Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
@@ -260,8 +259,7 @@ Focus on highly-rated, popular places that are currently open and operational.`;
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization:
-              "Bearer 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",
+            Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
@@ -425,7 +423,7 @@ Focus on highly-rated, popular places that are currently open and operational.`;
           <div className="form-group">
             <label>Location</label>
             <GooglePlacesAutocomplete
-              apiKey="AIzaSyCCVRIu7ocfLNX6v1zkTCnDNN366J8Mj_k"
+              apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
               onPlaceSelected={(place) => setLocation(place.formatted_address)}
               placeholder="Enter your town or city"
               options={{

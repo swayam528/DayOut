@@ -1,103 +1,183 @@
-import { curve, heroBackground, robot } from "../assets";
+import { curve } from "../assets";
 import Button from "./Button";
 import Section from "./Section";
-import { BackgroundCircles, BottomLine, Gradient } from "./design/Hero";
-import { heroIcons } from "../constants";
-import { ScrollParallax } from "react-just-parallax";
-import { useRef } from "react";
-import Generating from "./Generating";
-import Notification from "./Notification";
-import CompanyLogos from "./CompanyLogos";
+import { motion } from "framer-motion"; // Fixed import
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
-  const parallaxRef = useRef(null);
+  const navigate = useNavigate();
 
   return (
-    <Section
-      className="pt-[12rem] -mt-[5.25rem] bg-color-darkBlue"
-      crosses
-      crossesOffset="lg:translate-y-[5.25rem]"
-      customPaddings
-      id="hero"
-    >
-      <div className="container relative" ref={parallaxRef}>
-        <div className="relative z-1 max-w-[62rem] mx-auto text-center mb-[3.875rem] md:mb-20 lg:mb-[6.25rem]">
-          <h1 className="h1 mb-6">
-            Explore the Ease of Planning with {` `}
-            <span className="inline-block relative">
-              DayOut{" "}
-              <img
-                src={curve}
-                className="absolute top-full left-0 w-full xl:-mt-2"
-                width={624}
-                height={28}
-                alt="Curve"
-              />
-            </span>
-          </h1>
-          <p className="body-1 max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8">
+    <div className="relative min-h-screen flex items-center justify-center bg-color-darkBlue overflow-hidden">
+      {/* Previous background animations remain the same */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20"
+        animate={{
+          opacity: [0.5, 0.8, 0.5],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+        }}
+      />
+
+      {/* Background circles remain the same */}
+      <motion.div
+        className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"
+        animate={{
+          scale: [1, 1.2, 1],
+          x: [0, 20, 0],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+        }}
+      />
+      {/* Other background elements remain the same */}
+      <motion.div
+        className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
+        animate={{
+          scale: [1, 1.2, 1],
+          x: [0, -20, 0],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          delay: 1,
+        }}
+      />
+      <motion.div
+        className="absolute top-1/4 right-1/4 w-24 h-24 bg-blue-400/10 rounded-full blur-xl"
+        animate={{
+          y: [-10, 10, -10],
+          opacity: [0.5, 0.8, 0.5],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+        }}
+      />
+      <motion.div
+        className="absolute bottom-1/4 left-1/4 w-32 h-32 bg-purple-400/10 rounded-full blur-xl"
+        animate={{
+          y: [10, -10, 10],
+          opacity: [0.5, 0.8, 0.5],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          delay: 1.5,
+        }}
+      />
+
+      {/* Main content */}
+      <motion.div
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="space-y-8">
+          {/* Title with inverted curved underline */}
+          <div className="relative inline-block">
+            <motion.h1
+              className="text-5xl md:text-7xl font-bold text-white mb-2 tracking-tight"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8 }}
+            >
+              Explore the Ease of Planning with{" "}
+              <span className="relative inline-block">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                  DayOut
+                </span>
+                {/* Inverted curved underline using SVG */}
+                <motion.svg
+                  className="absolute -bottom-2 left-0"
+                  width="100%"
+                  height="12"
+                  viewBox="0 0 100 12"
+                  preserveAspectRatio="none"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
+                  <motion.path
+                    d="M0,10 Q50,1 100,10" // Inverted the Q point to curve upward
+                    fill="none"
+                    stroke="url(#gradient)"
+                    strokeWidth="2"
+                  />
+                  <defs>
+                    <linearGradient
+                      id="gradient"
+                      x1="0"
+                      y1="0"
+                      x2="100%"
+                      y2="0"
+                    >
+                      <stop offset="0%" stopColor="#60A5FA" /> {/* blue-400 */}
+                      <stop offset="100%" stopColor="#C084FC" />{" "}
+                      {/* purple-400 */}
+                    </linearGradient>
+                  </defs>
+                </motion.svg>
+              </span>
+            </motion.h1>
+          </div>
+
+          {/* Rest of the content remains the same */}
+          <motion.p
+            className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
             Whether it's a family outing, a day with friends, or a solo
             adventure, DayOut has got you covered.
-          </p>
-          <Button href="/getstarted" white>
-            Get started
-          </Button>
-        </div>
-        {/* <div className="relative max-w-[23rem] mx-auto md:max-w-5xl xl:mb-24">
-          <div className="relative z-1 p-0.5 rounded-2xl bg-conic-gradient">
-            <div className="relative bg-n-8 rounded-[1rem]">
-              <div className="h-[1.4rem] bg-n-10 rounded-t-[0.9rem]" />
+          </motion.p>
 
-              <div className="aspect-[33/40] rounded-b-[0.9rem] overflow-hidden md:aspect-[688/490] lg:aspect-[1024/490]">
-                <img
-                  src={robot}
-                  className="w-full scale-[1.7] translate-y-[8%] md:scale-[1] md:-translate-y-[10%] lg:-translate-y-[23%]"
-                  width={1024}
-                  height={490}
-                  alt="AI"
-                />
-
-                <Generating className="absolute left-4 right-4 bottom-5 md:left-1/2 md:right-auto md:bottom-8 md:w-[31rem] md:-translate-x-1/2" />
-
-                <ScrollParallax isAbsolutelyPositioned>
-                  <ul className="hidden absolute -left-[5.5rem] bottom-[7.5rem] px-1 py-1 bg-n-9/40 backdrop-blur border border-n-1/10 rounded-2xl xl:flex">
-                    {heroIcons.map((icon, index) => (
-                      <li className="p-5" key={index}>
-                        <img src={icon} width={24} height={25} alt={icon} />
-                      </li>
-                    ))}
-                  </ul>
-                </ScrollParallax>
-
-                <ScrollParallax isAbsolutelyPositioned>
-                  <Notification
-                    className="hidden absolute -right-[5.5rem] bottom-[11rem] w-[18rem] xl:flex"
-                    title="Code generation"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+          >
+            <motion.button
+              onClick={() => navigate("/dayout")}
+              className="relative group bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-full text-lg font-semibold overflow-hidden transform transition-transform hover:scale-105"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                initial={false}
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              />
+              <span className="relative z-10 flex items-center space-x-2">
+                <span>Get Started</span>
+                <motion.svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 inline-block"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
                   />
-                </ScrollParallax>
-              </div>
-            </div>
-
-            <Gradient />
-          </div>
-          <div className="absolute -top-[54%] left-1/2 w-[234%] -translate-x-1/2 md:-top-[46%] md:w-[138%] lg:-top-[104%]">
-            <img
-              src={heroBackground}
-              className="w-full"
-              width={1440}
-              height={1800}
-              alt="hero"
-            />
-          </div>
-
-          <BackgroundCircles />
-        </div> */}
-
-        {/* <CompanyLogos className="hidden relative z-10 mt-20 lg:block" /> */}
-      </div>
-
-      <BottomLine />
-    </Section>
+                </motion.svg>
+              </span>
+            </motion.button>
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

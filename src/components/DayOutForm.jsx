@@ -208,7 +208,7 @@ const DayOutForm = () => {
           headers: {
             "Content-Type": "application/json",
             Authorization:
-              "Bearer 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",
+              "Bearer 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",
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
@@ -272,7 +272,8 @@ Return ONLY this format with no additional text.`;
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer INSERT API KEY HERE",
+            Authorization:
+              "Bearer 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",
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",

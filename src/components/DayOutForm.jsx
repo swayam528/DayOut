@@ -22,97 +22,82 @@ const DayOutForm = () => {
     const description = activity.description.toLowerCase();
     const combined = `${name} ${description}`;
 
-    // Define category keywords with broader matches
-    const categories = {
-      restaurant: [
-        "restaurant",
-        "cafe",
-        "bar",
-        "food",
-        "dining",
-        "bistro",
-        "eatery",
-        "pizzeria",
-        "diner",
-        "grill",
-        "tavern",
-        "pub",
-      ],
-      museum: [
-        "museum",
-        "gallery",
-        "exhibit",
-        "art",
-        "cultural center",
-        "historical",
-        "heritage",
-      ],
-      outdoor: [
-        "park",
-        "garden",
-        "nature",
-        "trail",
-        "botanical",
-        "outdoor",
-        "walking",
-        "hiking",
-        "beach",
-      ],
-      shopping: [
-        "shop",
-        "store",
-        "mall",
-        "boutique",
-        "market",
-        "retail",
-        "shopping center",
-      ],
-      entertainment: [
-        "theater",
-        "cinema",
-        "show",
-        "movie",
-        "concert",
-        "performance",
-        "venue",
-        "entertainment",
-        "arcade",
-        "bowling",
-        "fun",
-        "activity",
-      ],
-      sports: [
-        "sport",
-        "fitness",
-        "gym",
-        "athletic",
-        "recreation",
-        "game",
-        "arena",
-        "stadium",
-      ],
-      attraction: [
-        "attraction",
-        "landmark",
-        "monument",
-        "point of interest",
-        "tourist",
-        "sightseeing",
-      ],
+    const categoryScores = {
+      restaurant: 0,
+      museum: 0,
+      outdoor: 0,
+      shopping: 0,
+      entertainment: 0,
+      sports: 0,
+      attraction: 0,
     };
 
-    // Check each category's keywords against both name and description
-    for (const [category, keywords] of Object.entries(categories)) {
-      if (keywords.some((keyword) => combined.includes(keyword))) {
-        console.log(`Activity "${name}" matched category: ${category}`);
-        return category;
-      }
-    }
+    const categoryKeywords = {
+      restaurant: {
+        primary: ["restaurant", "cafe", "bistro", "eatery", "dining"],
+        secondary: [
+          "food",
+          "bar",
+          "grill",
+          "tavern",
+          "pub",
+          "pizzeria",
+          "diner",
+        ],
+      },
+      museum: {
+        primary: ["museum", "gallery", "exhibition"],
+        secondary: ["art", "cultural", "historical", "heritage", "exhibit"],
+      },
+      outdoor: {
+        primary: ["park", "garden", "trail", "beach"],
+        secondary: ["nature", "botanical", "outdoor", "walking", "hiking"],
+      },
+      shopping: {
+        primary: ["mall", "shop", "store", "market"],
+        secondary: ["boutique", "retail", "shopping center", "plaza"],
+      },
+      entertainment: {
+        primary: ["theater", "cinema", "concert", "venue"],
+        secondary: [
+          "show",
+          "movie",
+          "performance",
+          "arcade",
+          "bowling",
+          "entertainment",
+        ],
+      },
+      sports: {
+        primary: ["stadium", "arena", "gym", "court"],
+        secondary: ["sport", "fitness", "athletic", "recreation", "game"],
+      },
+      attraction: {
+        primary: ["monument", "landmark", "tourist", "attraction"],
+        secondary: ["point of interest", "sightseeing", "historic site"],
+      },
+    };
 
-    console.log(
-      `No specific category match for "${name}", defaulting to "general"`
+    // Calculate scores for each category
+    Object.entries(categoryKeywords).forEach(([category, keywords]) => {
+      // Primary keywords get 2 points
+      keywords.primary.forEach((keyword) => {
+        if (combined.includes(keyword)) categoryScores[category] += 2;
+      });
+      // Secondary keywords get 1 point
+      keywords.secondary.forEach((keyword) => {
+        if (combined.includes(keyword)) categoryScores[category] += 1;
+      });
+    });
+
+    // Get category with highest score
+    const topCategory = Object.entries(categoryScores).reduce(
+      (max, [category, score]) =>
+        score > max.score ? { category, score } : max,
+      { category: "general", score: 0 }
     );
-    return "general";
+
+    return topCategory.score > 0 ? topCategory.category : "general";
   };
 
   const handleTimeOfDayChange = (value) => {
@@ -171,33 +156,53 @@ const DayOutForm = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const createPrompt = (
+    isRefresh = false,
+    activityType = null,
+    excludeActivities = []
+  ) => {
+    const basePrompt = `You are a local expert travel planner for ${
+      location || "this area"
+    }. ${
+      isRefresh
+        ? "Generate ONE new activity"
+        : `Create a ${tripLength}-hour ${timeOfDay} itinerary`
+    }.
 
-    const formattedPrompt = `
-  You are an AI travel planner. Create a ${tripLength}-hour ${timeOfDay} itinerary.
-  
-  Important Requirements:
-  - Create exactly ${tripLength} different activities
-  - Each activity must be exactly 1 hour
-  - Total time must add up to ${tripLength} hours
-  - Activities must be suitable for ${numPeople} people aged ${ageRange[0]}-${
+Requirements:
+- Each activity MUST be a REAL, SPECIFIC venue/location in ${
+      location || "the area"
+    }
+- Activities must be suitable for ${numPeople} people aged ${ageRange[0]}-${
       ageRange[1]
     }
-  - Location: ${location || "any location"}
-  ${additionalInfo ? `- Additional preferences: ${additionalInfo}` : ""}
-  
-  IMPORTANT: For each activity, you MUST recommend a specific place (restaurant name, museum name, park name, etc.) in ${location}. Do not give generic suggestions.
-  
-  For each activity, provide EXACTLY this format:
-  Activity Title: [specific place name]
-  Description: [brief description including why this specific place is recommended]
-  Duration: 1 hour
-  Highlight: [unique feature of this specific place]
-  
-  Number each activity 1 through ${tripLength}. Do not add any extra text or explanations.
-  `;
+- Activities must be appropriate for ${timeOfDay} time
+${additionalInfo ? `- Consider these preferences: ${additionalInfo}` : ""}
+${
+  excludeActivities.length > 0
+    ? `- Must be different from these places: ${excludeActivities.join(", ")}`
+    : ""
+}
+${activityType ? `- Must be a ${activityType.toUpperCase()} activity` : ""}
 
+REQUIRED FORMAT:
+Activity Title: [Exact name of specific venue/place]
+Description: [2-3 sentences about why this specific place is perfect for the group]
+Duration: 1 hour
+Highlight: [One unique or special feature of this specific place]
+
+${
+  !isRefresh
+    ? `Generate exactly ${tripLength} different activities, numbered 1 through ${tripLength}.`
+    : ""
+}
+Focus on highly-rated, popular places that are currently open and operational.`;
+
+    return basePrompt;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
 
     try {
@@ -212,7 +217,13 @@ const DayOutForm = () => {
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
-            messages: [{ role: "user", content: formattedPrompt }],
+            messages: [
+              {
+                role: "user",
+                content: createPrompt(),
+              },
+            ],
+            temperature: 0.7,
           }),
         }
       );
@@ -222,12 +233,7 @@ const DayOutForm = () => {
       }
 
       const data = await response.json();
-      const generatedContent = data.choices[0].message.content;
-
-      console.log("Generated content:", generatedContent);
-      const parsedActivities = parseActivities(generatedContent);
-      console.log("Parsed activities:", parsedActivities);
-
+      const parsedActivities = parseActivities(data.choices[0].message.content);
       setActivities(parsedActivities);
       setIsFormHidden(true);
     } catch (error) {
@@ -241,31 +247,13 @@ const DayOutForm = () => {
     setLoading(true);
     const currentActivity = activities[index];
     const activityType = getActivityType(currentActivity);
-    console.log(`Refreshing activity ${index}:`, currentActivity);
-    console.log(`Detected activity type:`, activityType);
 
-    const formattedPrompt = `
-Generate ONE NEW 1-hour activity in ${
-      location || "any location"
-    } that is specifically a ${activityType.toUpperCase()} activity. 
-
-IMPORTANT REQUIREMENTS:
-1. Must be a REAL, SPECIFIC venue/place (not a generic suggestion)
-2. Must be different from: ${Array.from(usedActivities).join(", ")}
-3. Must be suitable for ${numPeople} people aged ${ageRange[0]}-${ageRange[1]}
-4. Must be appropriate for ${timeOfDay} time
-${additionalInfo ? `5. Must consider these preferences: ${additionalInfo}` : ""}
-
-FORMAT YOUR RESPONSE EXACTLY LIKE THIS:
-Activity Title: [specific ${activityType} name]
-Description: [brief description explaining why this specific place is recommended]
-Duration: 1 hour
-Highlight: [unique feature or special aspect of this specific place]
-
-Return ONLY this format with no additional text.`;
+    // Get all activity names except the current one being refreshed
+    const excludeActivities = Array.from(usedActivities).filter(
+      (name) => name !== currentActivity.name
+    );
 
     try {
-      console.log("Sending refresh prompt:", formattedPrompt);
       const response = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
         {
@@ -277,40 +265,36 @@ Return ONLY this format with no additional text.`;
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
-            messages: [{ role: "user", content: formattedPrompt }],
-            temperature: 0.9,
+            messages: [
+              {
+                role: "user",
+                content: createPrompt(true, activityType, excludeActivities),
+              },
+            ],
+            temperature: 0.8,
           }),
         }
       );
 
       const data = await response.json();
-      console.log("API Response:", data);
-      const generatedContent = data?.choices?.[0]?.message?.content;
-      console.log("Generated content:", generatedContent);
-      const parsedActivities = parseActivities(generatedContent);
-      console.log("Parsed new activity:", parsedActivities);
+      const parsedActivities = parseActivities(data.choices[0].message.content);
 
       if (
         parsedActivities &&
-        parsedActivities.length > 0 &&
+        parsedActivities[0] &&
         parsedActivities[0].name !== "Error Parsing Activities"
       ) {
-        const newActivity = parsedActivities[0];
-        const newActivityType = getActivityType(newActivity);
-        console.log(
-          `New activity type: ${newActivityType}, Expected: ${activityType}`
-        );
-
         setActivities((prevActivities) => {
           const newActivities = [...prevActivities];
-          newActivities[index] = newActivity;
+          newActivities[index] = parsedActivities[0];
           return newActivities;
         });
       }
     } catch (error) {
       console.error("Error refreshing activity:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleBackToForm = () => {
